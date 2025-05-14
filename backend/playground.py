@@ -14,9 +14,9 @@ from pathlib import Path
 from agno.tools.reasoning import ReasoningTools
 from pydantic import BaseModel
 from fastapi import HTTPException
-import traceback
+from fastapi.middleware.cors import CORSMiddleware
 from agno.tools.duckduckgo import DuckDuckGoTools
-
+from fastapi import FastAPI
 from agno.tools.todoist import TodoistTools
 
 # from dotenv import load_dotenv
@@ -29,6 +29,15 @@ from agno.tools.todoist import TodoistTools
 # ELEVENLABS = os.getenv("ELEVEN_LABS_API_KEY")
 # TODOIST = os.getenv("TODOIST_API_TOKEN")
 
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class FileUploadRequest(BaseModel):
     file_url: str
