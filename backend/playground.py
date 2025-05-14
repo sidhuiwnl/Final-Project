@@ -15,7 +15,9 @@ from agno.tools.reasoning import ReasoningTools
 from pydantic import BaseModel
 from fastapi import HTTPException
 import traceback
+from agno.tools.duckduckgo import DuckDuckGoTools
 
+from agno.tools.todoist import TodoistTools
 
 # from dotenv import load_dotenv
 # import os
@@ -64,6 +66,8 @@ memory = Memory(
 
 
 
+
+
 web_agent = Agent(
     model=Gemini(id="gemini-2.0-flash"),
     memory=memory,
@@ -71,21 +75,28 @@ web_agent = Agent(
     enable_user_memories=True,
     add_history_to_messages=True,
     knowledge=knowledge_base,
-    search_knowledge=True,
-    instructions=[
+
+    instructions=[ "Use tables to display data.",
         "Include sources in your response.",
-        "Always search your knowledge before answering the question.",
+        "Search your knowledge before answering the question.",
         "Only include the output in your response. No other text.",
-        "If you are asked to generate audio you should audio like for example : Question: why ai is important?, Answer:AI (Artificial Intelligence) is important because it enhances human capabilities, automates repetitive tasks, and helps solve complex problems across many industries.... contniue in a audio format "
-        "Use only tables to display todos related questions and to display data"
+        "When given a task, create a todoist task for it.",
+        "When given a list of tasks, create a todoist task for each one.",
+        "When given a task to update, update the todoist task.",
+        "When given a task to delete, delete the todoist task.",
+        "When given a task to get, get the todoist task.",
     ],
+    search_knowledge=True,
+
     tools=[
         ElevenLabsTools(
             voice_id="JBFqnCBsd6RMkjVDRZzb",
             model_id="eleven_multilingual_v2",
             target_directory=str(tmp_dir.joinpath("audio").resolve()),
         ),
-        ReasoningTools(add_instructions=True)
+        ReasoningTools(add_instructions=True),
+        DuckDuckGoTools(),
+        TodoistTools()
     ],
     storage=SqliteStorage(table_name="agent_sessions",db_file="tmp/agent.db"),
     markdown=True
@@ -106,8 +117,6 @@ async def upload_file(data : FileUploadRequest):
         # Append new URL
         knowledge_base.urls.append(data.file_url)
 
-
-
         return {"message": "URL added and processed successfully"}
 
     except Exception as e:
@@ -115,7 +124,7 @@ async def upload_file(data : FileUploadRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    # Load the knowledge base, comment after first run
+
     knowledge_base.load(recreate=True)
     show_full_reasoning = True,
     stream_intermediate_steps = True,
