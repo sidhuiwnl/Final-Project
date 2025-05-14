@@ -16,28 +16,36 @@ from pydantic import BaseModel
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from agno.tools.duckduckgo import DuckDuckGoTools
-from fastapi import FastAPI
+import traceback
 from agno.tools.todoist import TodoistTools
+from agno.tools.wikipedia import WikipediaTools
+from agno.tools.zoom import ZoomTools
+from agno.tools.youtube import YouTubeTools
 
-# from dotenv import load_dotenv
-# import os
-#
-#
-# load_dotenv()
+from dotenv import load_dotenv
+import os
+
+
+load_dotenv()
+
+
 #
 # GOOGLE_KEY = os.getenv("GOOGLE_API_KEY")
 # ELEVENLABS = os.getenv("ELEVEN_LABS_API_KEY")
 # TODOIST = os.getenv("TODOIST_API_TOKEN")
 
-app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+ACCOUNT_ID = os.getenv("ZOOM_ACCOUNT_ID")
+ZOOM_CLIENT_ID = os.getenv("ZOOM_CLIENT_ID")
+ZOOM_CLIENT_SECRET = os.getenv("ZOOM_CLIENT_SECRET")
+
+zoom_tools = ZoomTools(
+    account_id=ACCOUNT_ID,
+    client_id=ZOOM_CLIENT_ID,
+    client_secret=ZOOM_CLIENT_SECRET
 )
+
+
 
 class FileUploadRequest(BaseModel):
     file_url: str
@@ -84,7 +92,7 @@ web_agent = Agent(
     enable_user_memories=True,
     add_history_to_messages=True,
     knowledge=knowledge_base,
-
+    agent_id="AI Digital Twin",
     instructions=[ "Use tables to display data.",
         "Include sources in your response.",
         "Search your knowledge before answering the question.",
@@ -94,6 +102,8 @@ web_agent = Agent(
         "When given a task to update, update the todoist task.",
         "When given a task to delete, delete the todoist task.",
         "When given a task to get, get the todoist task.",
+        "Always include source of the article fetched ",
+        "You are also a YouTube agent. Obtain the captions of a YouTube video and answer questions."
     ],
     search_knowledge=True,
 
@@ -105,13 +115,24 @@ web_agent = Agent(
         ),
         ReasoningTools(add_instructions=True),
         DuckDuckGoTools(),
-        TodoistTools()
+        TodoistTools(),
+        WikipediaTools(),
+        zoom_tools,
+        YouTubeTools()
     ],
     storage=SqliteStorage(table_name="agent_sessions",db_file="tmp/agent.db"),
     markdown=True
 )
 
 app = Playground(agents=[web_agent]).get_app()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://final-project-wheat-alpha.vercel.app"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/file")
 async def upload_file(data : FileUploadRequest):

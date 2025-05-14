@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="73220437-db62-406c-a561-78527cba2fdf" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/playground.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/playground.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
