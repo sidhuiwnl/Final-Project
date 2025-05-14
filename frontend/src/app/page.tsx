@@ -1,9 +1,18 @@
 'use client'
+
+import { useEffect } from 'react'
 import Sidebar from '@/components/playground/Sidebar/Sidebar'
 import { ChatArea } from '@/components/playground/ChatArea'
 import { Suspense } from 'react'
 
 export default function Home() {
+  useEffect(() => {
+    const user = localStorage.getItem('user')
+    if (!user) {
+      window.location.href = '/login'
+    }
+  }, [])
+
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <div className="flex h-screen bg-background/80">
